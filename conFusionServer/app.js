@@ -12,14 +12,39 @@ connect.then((db) => {
   console.log("Connected correctly to server");
 }, (err) => { console.log(err); });
 
+function auth (req, res, next) {
+  console.log(req.headers);
+  const authHeader = req.headers.authorization;
+  if(!authHeader){
+    const err = new Error("You're not authenticated!");
+    res.setHeader ('WWWW-Authenticate', 'Basic');
+    err.status = 401
+    next(err);
+    return
+  }
+  const auth = new Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+  const user = auth[0]
+  const pass= auth[1]
+  if (user == 'admin' && pass == 'password'){
+    next();
+  }else{
+    const err = new Error('You are not authenticated');
+    res.setHeader ('WWWW-Authenticate', 'Basic');
+    err.status = 401
+    next(err)
+  } 
+}
+
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var dishRouter = require('./routes/dishRouter');
 var promoRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
+const { use } = require('./routes/index');
 
 var app = express();
+app.use(auth)
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
