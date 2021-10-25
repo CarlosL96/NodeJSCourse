@@ -7,6 +7,8 @@ const mongoose = require("mongoose");
 const Dishes = require("./models/dishes");
 const url = "mongodb://localhost:27017/conFusion";
 const connect = mongoose.connect(url);
+const session = require("express-session");
+const FileStore = require("session-file-store")(session);
 
 connect.then(
   (db) => {
@@ -26,7 +28,17 @@ const { use } = require("./routes/index");
 
 var app = express();
 
-app.use(cookieParser("12345-67890-09871-13356"));
+//app.use(cookieParser("12345-67890-09871-13356"));
+app.use(
+  session({
+    name: "session-id",
+    secret: "12345-6789-24656-12124",
+    saveUninitialized: false,
+    resave: false,
+    store: new FileStore(),
+  })
+);
+
 app.use(auth);
 
 // view engine setup
@@ -36,7 +48,7 @@ app.set("view engine", "jade");
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+//app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
@@ -61,10 +73,8 @@ app.use(function (err, req, res, next) {
   res.render("error");
 });
 
-
-
 function auth(req, res, next) {
-  if (!req.signedCookies || !req.signedCookies.user ) {
+  if (!req.session.user) {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       const err = new Error("You're not authenticated!");
@@ -79,7 +89,7 @@ function auth(req, res, next) {
     const user = auth[0];
     const pass = auth[1];
     if (user == "admin" && pass == "password") {
-      res.cookie("user", "admin", { signed: true });
+      req.session.user = "admin";
       next();
     } else {
       const err = new Error("You are not authenticated");
@@ -88,7 +98,11 @@ function auth(req, res, next) {
       next(err);
     }
   } else {
-    if (req.signedCookies.user == "admin") next();
+    if (req.session.user == "admin"){
+      console.log("req.session:", req.session);
+      next();
+    }
+   
     else {
       const err = new Error("You are not authenticated");
       err.status = 401;
