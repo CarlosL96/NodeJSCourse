@@ -15,6 +15,8 @@ var leaderRouter = require("./routes/leaderRouter");
 const { use } = require("./routes/index");
 const session = require("express-session");
 const FileStore = require("session-file-store")(session);
+const passport = require("passport");
+const authenticate = require("./authenticate");
 var app = express();
 
 connect.then(
@@ -29,7 +31,6 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-
 //app.use(cookieParser("12345-67890-09871-13356"));
 app.use(
   session({
@@ -41,29 +42,21 @@ app.use(
   })
 );
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
-
 function auth(req, res, next) {
-  if (!req.session.user) {
-    const err = new Error("You're not authenticated!")
-    err.status = 403
-    return next(err);
-  }    
-  else {
-    if (req.session.user == "authenticated"){      
-      next();
-    }   
-    else {
-      const err = new Error("You are not authenticated");
-      err.status = 401;
-      next(err);
-    }
+  if (!req.user) {
+    var err = new Error("You are not authenticated!");
+    err.status = 403;
+    next(err);
+  } else {
+    next();
   }
 }
-
-
 
 //app.use(cookieParser());
 app.use(auth);
@@ -71,7 +64,6 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/dishes", dishRouter);
 app.use("/promotions", promoRouter);
 app.use("/leaders", leaderRouter);
-
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -92,6 +84,5 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render("error");
 });
-
 
 module.exports = app;
