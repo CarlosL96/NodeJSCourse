@@ -5,7 +5,8 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const mongoose = require("mongoose");
 const Dishes = require("./models/dishes");
-const url = "mongodb://localhost:27017/conFusion";
+var config = require('./config');
+const url = config.mongoUrl;
 const connect = mongoose.connect(url);
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
@@ -31,35 +32,12 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-//app.use(cookieParser("12345-67890-09871-13356"));
-app.use(
-  session({
-    name: "session-id",
-    secret: "12345-6789-24656-12124",
-    saveUninitialized: false,
-    resave: false,
-    store: new FileStore(),
-  })
-);
-
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
-function auth(req, res, next) {
-  if (!req.user) {
-    var err = new Error("You are not authenticated!");
-    err.status = 403;
-    next(err);
-  } else {
-    next();
-  }
-}
-
-//app.use(cookieParser());
-app.use(auth);
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/dishes", dishRouter);
 app.use("/promotions", promoRouter);
