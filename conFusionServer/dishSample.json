@@ -1,0 +1,9 @@
+{"name": "Uthapizza",
+"image": "images/uthapizza.png",
+"category": "mains",
+"label": "Hot",
+"price": "4.99",
+"featured": "true",
+"description": "A unique description lorem ipsum for your meals",
+"comments": []
+}
