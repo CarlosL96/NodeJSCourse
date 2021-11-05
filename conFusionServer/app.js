@@ -32,6 +32,15 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.all('*', (req, res, next) => {
+  if (req.secure) {
+    return next();
+  }
+  else {
+    res.redirect(307, 'https://' + req.hostname + ':' + app.get('secPort') + req.url);
+  }
+});
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -44,6 +53,8 @@ app.use("/promotions", promoRouter);
 app.use("/leaders", leaderRouter);
 
 // view engine setup
+
+
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 
