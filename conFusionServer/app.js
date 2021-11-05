@@ -18,6 +18,7 @@ const session = require("express-session");
 const FileStore = require("session-file-store")(session);
 const passport = require("passport");
 const authenticate = require("./authenticate");
+const uploadRouter = require("./routes/uploadRouter")
 var app = express();
 
 connect.then(
@@ -51,6 +52,7 @@ app.use("/users", usersRouter);
 app.use("/dishes", dishRouter);
 app.use("/promotions", promoRouter);
 app.use("/leaders", leaderRouter);
+app.use("/imageUpload", uploadRouter)
 
 // view engine setup
 
